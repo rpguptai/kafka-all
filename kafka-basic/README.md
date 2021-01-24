@@ -32,3 +32,13 @@ update etc/hosts
 127.0.0.1	localhost
 127.0.0.1 zookeeper-1 zookeeper-2 zookeeper-3
 127.0.0.1 kafka-1 kafka-2 kafka-3
+
+
+
+### verify memory and cpu usage
+docker ps -q | xargs docker stats --no-stream
+
+### verify status
+
+docker inspect <CONTAINER_NAME> | jq '.[].State'
+

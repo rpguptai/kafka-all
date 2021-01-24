@@ -164,6 +164,18 @@ services:
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
       CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
 
+  schema-registry-ui:
+    container_name: schema-registry-ui
+    image: landoop/schema-registry-ui:latest
+    depends_on:
+      - schema-registry
+    ports:
+      - 8001:8000
+    hostname: schema-registry-ui
+    environment:
+      - SCHEMAREGISTRY_URL=http://schema-registry:8081
+      - PROXY=true
+
   control-center:
     image: confluentinc/cp-enterprise-control-center:latest
     hostname: control-center
