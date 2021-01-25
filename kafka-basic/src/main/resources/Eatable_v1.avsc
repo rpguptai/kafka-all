@@ -1,0 +1,19 @@
+{
+  "name": "Eatable",
+  "type": "record",
+  "namespace": "com.versh.fundamental",
+  "fields": [
+    {
+      "name": "fruit",
+      "type": "string"
+    },
+    {
+      "name": "size",
+      "type": "string"
+    },
+    {
+      "name": "color",
+      "type": "string"
+    }
+  ]
+}

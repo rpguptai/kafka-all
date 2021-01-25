@@ -7,7 +7,8 @@ val log4jVersion = "2.4.1"
 resolvers ++= Seq(
   "bintray-spark-packages" at "https://dl.bintray.com/spark-packages/maven",
   "Typesafe Simple Repository" at "https://repo.typesafe.com/typesafe/simple/maven-releases",
-  "MavenRepository" at "https://mvnrepository.com"
+  "MavenRepository" at "https://mvnrepository.com",
+  "confluent" at "https://packages.confluent.io/maven/"
 )
 
 /*
@@ -23,6 +24,7 @@ libraryDependencies ++= Seq(
   "org.apache.kafka" %% "kafka" % kafkaVersion,
   "org.apache.kafka" % "kafka-streams" % kafkaVersion,
 
-  "org.scalatest" %% "scalatest" % "3.0.8" % Test
-
+  "org.scalatest" %% "scalatest" % "3.0.8" % Test,
+  "io.confluent"% "kafka-avro-serializer"% "5.0.0",
+  "io.confluent"% "kafka-schema-registry-client" %"5.0.0"
 )

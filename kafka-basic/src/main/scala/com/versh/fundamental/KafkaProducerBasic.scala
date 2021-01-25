@@ -15,7 +15,7 @@ import org.apache.kafka.common.serialization.StringSerializer
   *
   * */
 
-object KafkaProducer {
+object KafkaProducerBasic {
 
   private[this] val logger = Logger(getClass.getSimpleName)
 

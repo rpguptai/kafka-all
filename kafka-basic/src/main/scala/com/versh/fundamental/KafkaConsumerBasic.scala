@@ -11,7 +11,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig.{ BOOTSTRAP_SERVERS_CONF
 import org.apache.kafka.common.serialization.StringDeserializer
 
 
-object KafkaConsumer {
+object KafkaConsumerBasic {
   private[this] val logger = Logger(getClass.getSimpleName)
 
   /*
