@@ -1,17 +1,18 @@
 package com.versh.advance
 
 import com.typesafe.scalalogging.Logger
-import org.apache.kafka.clients.consumer.ConsumerConfig.{AUTO_COMMIT_INTERVAL_MS_CONFIG, BOOTSTRAP_SERVERS_CONFIG, ENABLE_AUTO_COMMIT_CONFIG, GROUP_ID_CONFIG, KEY_DESERIALIZER_CLASS_CONFIG, VALUE_DESERIALIZER_CLASS_CONFIG}
-import org.apache.kafka.clients.consumer.{CommitFailedException, ConsumerRecord, ConsumerRecords, KafkaConsumer, OffsetAndMetadata, OffsetCommitCallback}
+import org.apache.kafka.clients.consumer.ConsumerConfig.{BOOTSTRAP_SERVERS_CONFIG, GROUP_ID_CONFIG, KEY_DESERIALIZER_CLASS_CONFIG, VALUE_DESERIALIZER_CLASS_CONFIG}
+import org.apache.kafka.clients.consumer.{CommitFailedException, ConsumerRebalanceListener, ConsumerRecord, ConsumerRecords, KafkaConsumer, OffsetAndMetadata, OffsetCommitCallback}
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
-import java.util.Map
-import scala.collection.JavaConverters.asJavaCollectionConverter
+
 import java.time.Duration
+import java.util
 import java.util.Properties
 import scala.util.{Failure, Success, Try}
+import scala.collection.JavaConverters.asJavaCollectionConverter
 
-object ConsumerCommits {
+object RebalancedConsumer {
   private[this] val logger = Logger(getClass.getSimpleName)
 
   /*
@@ -37,6 +38,7 @@ object ConsumerCommits {
     props.put(VALUE_DESERIALIZER_CLASS_CONFIG, classOf[StringDeserializer].getName)
     new KafkaConsumer(props)
   }
+  var currentOffsets: java.util.Map[TopicPartition, OffsetAndMetadata] = new util.HashMap()
 
   def main(args: Array[String]): Unit =
     consume(newConsumer(), TOPIC_NAME, TIMEOUT_MILLIS)
@@ -44,7 +46,7 @@ object ConsumerCommits {
 
   def consume[K, V](consumer: KafkaConsumer[K, V], topic: String, timeoutMillis: Long): Unit = {
     printf(s"Start to consume from $topic")
-    consumer.subscribe(List(topic).asJavaCollection)
+    consumer.subscribe(List(topic).asJavaCollection, new HandleRebalanced(consumer))
 
     Try {
       while (true) {
@@ -57,9 +59,10 @@ object ConsumerCommits {
                     |  key=${record.key}
                     |  value=${record.value}
            """.stripMargin)
+          currentOffsets.put(new TopicPartition(record.topic(), record.partition()), new OffsetAndMetadata(record.offset()))
           try
             consumer.commitAsync(new OffsetCommitCallback() {
-              override def onComplete(offsets: Map[TopicPartition, OffsetAndMetadata], exception: Exception): Unit = {
+              override def onComplete(offsets: java.util.Map[TopicPartition, OffsetAndMetadata], exception: Exception): Unit = {
                 printf(s"HELLO committed..")
               }
             })
@@ -80,4 +83,15 @@ object ConsumerCommits {
     consumer.close()
   }
 
+  class HandleRebalanced[K, V](consumer: KafkaConsumer[K, V]) extends ConsumerRebalanceListener{
+    def onPartitionsAssigned(partitions: java.util.Collection[TopicPartition]): Unit = {
+      printf(s"################NEW PARTITION ASSIGNED")
+    }
+
+    def onPartitionsRevoked(partitions: java.util.Collection[TopicPartition]): Unit = {
+      printf(s"##### PARTITION REVOKED ... ${currentOffsets.size()} ${currentOffsets}")
+      consumer.commitAsync(currentOffsets,null)
+    }
+  }
 }
+
